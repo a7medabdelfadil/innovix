@@ -10,11 +10,11 @@ function Dashboard() {
 
   return (
     <Container>
-        <Text font={"bold"} size="3xl" >
+        <Text font={"bold"} size="3xl">
           {t('welcomeToDashboard')}
         </Text>
     </Container>
   )
 }
 
-export default Dashboard
+export default Dashboard;
