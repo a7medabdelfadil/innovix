@@ -8,7 +8,6 @@ const translations: Record<Language, Record<string, string>> = {
     ar,
 };
 
-
 export const useTranslation = () => {
     const language = useLanguageStore((state) => state.language); // "en", "ar"
     const dictionary = translations[language as Language] || translations.en;
