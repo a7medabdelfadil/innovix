@@ -339,7 +339,7 @@ const NavBar = () => {
             className={cn(
               "fixed inset-y-0 z-[60] transform bg-bgPrimary transition-all duration-300 ease-in lg:bottom-0 lg:end-auto lg:block",
               small ? "w-[90px]" : "w-[240px]",
-              language === "ar" ? "end-0" : "start-0",
+    language === "ar" ? "right-0" : "left-0",
               small ? "" : "overflow-y-auto",
               "drop-shadow-2xl lg:drop-shadow-none",
               language === "ar"

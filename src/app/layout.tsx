@@ -8,27 +8,40 @@ import { usePathname } from "next/navigation";
 import ThemeProvider from "./providers/themeProvider";
 import { useState } from "react";
 import NavBar from "~/_components/NavBar";
+import useLanguageStore from "~/APIs/store";
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const [queryClient] = useState(() => new QueryClient());
-  const isLoginPage =
-    pathname === "/login" ||
-    pathname === "/signup";
+  const isLoginPage = pathname === "/login" || pathname === "/signup";
+  const { language } = useLanguageStore() as {
+    language: string;
+  };
+
+  const lang = language === "ar" ? "ar" : "en";
+  const dir = language === "ar" ? "rtl" : "ltr";
 
   return (
     <html
-      lang="en"
-      className={`${GeistSans.variable}`}
+      lang={lang}
+      dir={dir}
+      className={GeistSans.variable}
       suppressHydrationWarning
     >
       <head>
         <title>Innovix Platform</title>
-        <meta name="description" content="Manage your classes, track student progress, and communicate seamlessly with parents. Your go-to tool for efficient teaching and organization." />
+        <meta
+          name="description"
+          content="Graduation Project."
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/x-icon" href="/images/innovix-white-top.png" />
+        <link
+          rel="icon"
+          type="image/x-icon"
+          href="/images/innovix-white-top.png"
+        />
       </head>
       <body className="bg-bgSecondary">
         <QueryClientProvider client={queryClient}>
