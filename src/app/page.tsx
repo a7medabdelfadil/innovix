@@ -1,7 +1,8 @@
-import Dashboard from "./dashboard/page";
+'use client';
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  return (
-    <Dashboard />
-  );
+  const router = useRouter();
+  router.push("/role-selection");
+  return;
 }

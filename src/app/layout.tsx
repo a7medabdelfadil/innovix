@@ -15,7 +15,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const [queryClient] = useState(() => new QueryClient());
-  const isLoginPage = pathname === "/login" || pathname === "/signup";
+  const isLoginPage = pathname === "/login" || pathname === "/signup" || pathname === "/role-selection";
   const { language } = useLanguageStore() as {
     language: string;
   };
