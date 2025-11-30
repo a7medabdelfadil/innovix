@@ -2,7 +2,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import useLanguageStore, {
@@ -10,13 +10,120 @@ import useLanguageStore, {
   useUserDataStore,
 } from "~/APIs/store";
 import { cn } from "~/lib/utils";
-import { IoIosArrowDown } from "react-icons/io";
-import Spinner from "~/_components/Spinner";
-import Switch from "~/_components/Switch";
-import { RiHomeSmileFill } from "react-icons/ri";
-import { IoSettingsOutline } from "react-icons/io5";
-import { TbLogin } from "react-icons/tb";
+import Spinner from "~/_components/global/Spinner";
+import Switch from "~/_components/global/Switch";
 import { useTranslation } from "~/hooks/useTranslatoins";
+import { LuLayoutDashboard } from "react-icons/lu";
+import {
+  HiOutlineBuildingOffice2,
+  HiOutlineBriefcase,
+  HiOutlineArrowRightOnRectangle,
+} from "react-icons/hi2";
+import { HiOutlineUserGroup } from "react-icons/hi";
+
+// ---------- ROLE HELPERS ----------
+
+type PortalRole = "admin" | "employer" | "jobSeeker";
+
+const getRoleFromPath = (path: string | null): PortalRole => {
+  if (!path) return "admin";
+  if (path.startsWith("/employer")) return "employer";
+  if (path.startsWith("/job-seeker")) return "jobSeeker";
+  return "admin"; // default
+};
+
+const portalTitleMap: Record<PortalRole, string> = {
+  admin: "Admin Portal",
+  employer: "Employer Portal",
+  jobSeeker: "Job Seeker Portal",
+};
+
+const roleUserNameMap: Record<PortalRole, string> = {
+  admin: "Admin User",
+  employer: "Employer User",
+  jobSeeker: "Job Seeker",
+};
+
+const roleColorClasses: Record<
+  PortalRole,
+  {
+    accentBg: string; 
+    accentText: string; 
+    activeBg: string; 
+    activeText: string; 
+  }
+> = {
+  admin: {
+    accentBg: "bg-[#145efc]",
+    accentText: "text-white",
+    activeBg: "bg-blue-50",
+    activeText: "text-blue-600",
+  },
+  employer: {
+    accentBg: "bg-emerald-500",
+    accentText: "text-white",
+    activeBg: "bg-emerald-50",
+    activeText: "text-emerald-600",
+  },
+  jobSeeker: {
+    accentBg: "bg-purple-500",
+    accentText: "text-white",
+    activeBg: "bg-purple-50",
+    activeText: "text-purple-600",
+  },
+};
+
+const buildNavLinks = (role: PortalRole, t: (key: string) => string) => {
+  if (role === "admin") {
+    return [
+      { href: "/admin", icon: LuLayoutDashboard, label: t("dashboard") },
+      {
+        href: "/admin/companies",
+        icon: HiOutlineBuildingOffice2,
+        label: t("companies"),
+      },
+      { href: "/admin/jobs", icon: HiOutlineBriefcase, label: t("jobs") },
+      {
+        href: "/admin/applications",
+        icon: HiOutlineUserGroup,
+        label: t("applications"),
+      },
+    ];
+  }
+
+  if (role === "employer") {
+    return [
+      { href: "/employer", icon: LuLayoutDashboard, label: t("dashboard") },
+      {
+        href: "/employer/jobs",
+        icon: HiOutlineBriefcase,
+        label: t("jobs"),
+      },
+      {
+        href: "/employer/applications",
+        icon: HiOutlineUserGroup,
+        label: t("applications"),
+      },
+    ];
+  }
+
+  // jobSeeker
+  return [
+    { href: "/job-seeker", icon: LuLayoutDashboard, label: t("dashboard") },
+    {
+      href: "/job-seeker/jobs",
+      icon: HiOutlineBriefcase,
+      label: t("jobs"),
+    },
+    {
+      href: "/job-seeker/applications",
+      icon: HiOutlineUserGroup,
+      label: t("applications"),
+    },
+  ];
+};
+
+// ---------- NAVBAR LINK ----------
 
 interface NavBarLinkProps {
   href: string;
@@ -25,6 +132,9 @@ interface NavBarLinkProps {
   small: boolean;
   url: string;
   onClick?: () => void;
+  activeBgClass: string;
+  activeTextClass: string;
+  currentRole: PortalRole;
 }
 
 const NavBarLink = ({
@@ -34,57 +144,79 @@ const NavBarLink = ({
   label,
   small,
   url,
+  activeBgClass,
+  activeTextClass,
+  currentRole,
 }: NavBarLinkProps) => {
   const isActive = url === href;
+
+  const baseLinkClasses =
+    "group flex items-center font-sans text-base transition-colors";
+  const sizeClasses = small
+    ? "mx-2 h-12 w-12 justify-center rounded-lg"
+    : "mx-2 px-4 py-3 rounded-lg gap-x-3.5";
+
+  const stateClasses = isActive
+    ? `${activeBgClass} ${activeTextClass}`
+    : `text-slate-500 hover:bg-slate-50 ${currentRole === "admin" ? "hover:text-blue-600" : currentRole === "employer" ? "hover:text-emerald-600" : "hover:text-purple-600"}`;
+
   return (
     <li>
       <Link
-        onClick={onClick}
-        className={`flex ${small ? "w-[40px] px-2.5" : ""} text-md group m-4 items-center gap-x-3.5 rounded-lg py-2 font-sans font-semibold text-textSecondary hover:bg-bgSecondary hover:text-primary`}
         href={href}
+        onClick={onClick}
+        className={`${baseLinkClasses} ${sizeClasses} ${stateClasses}`}
       >
         <Icon
-          className={`h-10 w-10 ${small ? "" : "pl-4"} ${
+          className={`h-6 w-6 flex-shrink-0 ${
             isActive
-              ? `${small ? "" : "border-l-2"} border-primary text-primary`
-              : ""
+              ? activeTextClass
+              : `text-slate-400 ${currentRole === "admin" ? "group-hover:text-blue-600" : currentRole === "employer" ? "group-hover:text-emerald-600" : "group-hover:text-purple-600"}`
           }`}
         />
-        {!small && (
-          <p className={`translate-y-0.5 ${isActive ? "text-primary" : ""}`}>
-            {label}
-          </p>
-        )}
+        {!small && <span className="truncate">{label}</span>}
       </Link>
     </li>
   );
 };
 
+// ---------- NAVBAR MAIN COMPONENT ----------
+
 const NavBar = () => {
+  const router = useRouter();
   const toggleNav = useBooleanValue((state) => state.toggle);
   const [profile, setProfile] = useState(false);
-  const toggleProfile = () => {
-    setProfile(!profile);
-  };
+  const toggleProfile = () => setProfile((p) => !p);
+
   const [isClient, setIsClient] = useState(false);
   const userData = useUserDataStore.getState().userData;
+
   useEffect(() => {
     setIsClient(true);
   }, []);
+
   const { theme, setTheme } = useTheme();
   const url = usePathname();
+  const { t } = useTranslation();
+
+  const role = getRoleFromPath(url);
+  const roleColors = roleColorClasses[role];
+  const portalTitle = portalTitleMap[role];
+  const roleUserName = roleUserNameMap[role];
+
+  const navLinks = buildNavLinks(role, t);
+
   const [small, setSmall] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleNavbarSmall = () => {
-    setSmall(!small);
+    setSmall((s) => !s);
     toggleNav();
   };
 
   const navbarRef = useRef<HTMLDivElement>(null);
-  const toggleNavbar = () => {
-    setIsOpen((prev) => !prev);
-  };
+  const toggleNavbar = () => setIsOpen((prev) => !prev);
+
   const handleClickOutside = (event: MouseEvent) => {
     if (
       navbarRef.current &&
@@ -93,6 +225,7 @@ const NavBar = () => {
       setIsOpen(false);
     }
   };
+
   useEffect(() => {
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -105,14 +238,13 @@ const NavBar = () => {
     };
   }, [isOpen]);
 
-  const OpenSideBar = () => {
-    setIsOpen(!isOpen);
-  };
+  const OpenSideBar = () => setIsOpen((prev) => !prev);
 
   const { language, setLanguage } = useLanguageStore() as {
     language: string;
     setLanguage: (lang: string) => void;
   };
+
   const [isOpenL, setIsOpenL] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -132,14 +264,6 @@ const NavBar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const { t } = useTranslation();
-
-  const navLinks = [
-    { href: "/", icon: RiHomeSmileFill, label: t("dashboard") },
-    { href: "/settings", icon: IoSettingsOutline, label: t("settings") },
-    { href: "/login", icon: TbLogin, label: t("logout") },
-  ];
-
   if (!isClient)
     return (
       <div className="absolute left-0 top-0 z-[9999] flex h-screen w-full items-center justify-center bg-bgPrimary">
@@ -156,149 +280,8 @@ const NavBar = () => {
         ></div>
       )}
       <header dir={language === "ar" ? "rtl" : "ltr"} ref={navbarRef}>
-        <div >
-          <header
-            dir={language === "ar" ? "rtl" : "ltr"}
-            className={`sticky inset-x-0 top-0 z-[48] flex w-full flex-wrap bg-bgPrimary py-2.5 text-sm sm:flex-nowrap sm:justify-start sm:py-4`}
-          >
-            <nav
-              className="mx-auto flex w-full basis-full items-center px-4 sm:px-6"
-              aria-label="Global"
-            >
-              <div className="me-5 lg:me-0 lg:hidden">
-                <Link
-                  className="inline-block min-w-20 max-w-40 flex-none rounded-xl text-xl font-semibold focus:opacity-80 focus:outline-none"
-                  href="/"
-                  aria-label="Preline"
-                >
-                  <img src="/images/innovix.png" alt="#" />
-                </Link>
-              </div>
-              <div className="ms-auto flex w-full items-center justify-end sm:order-3 sm:justify-between sm:gap-x-3">
-                <div className="hidden sm:block"></div>
-
-                <div className="flex flex-row items-center justify-end gap-2">
-                  <div className="relative" ref={dropdownRef}>
-                    <button
-                      className="flex min-h-12 min-w-12 items-center gap-2 rounded-md p-2 hover:bg-bgSecondary"
-                      onClick={() => setIsOpenL(!isOpenL)}
-                    >
-                      <span>
-                        {language === "en" ? (
-                          <img
-                            src="/images/en.png"
-                            className="h-6 w-6"
-                            alt="#"
-                          />
-                        ) : (
-                          <img
-                            src="/images/ar.png"
-                            className="h-6 w-6"
-                            alt="#"
-                          />
-                        )}
-                      </span>
-                      <IoIosArrowDown className="size-3 text-textSecondary" />
-                    </button>
-
-                    {isOpenL && (
-                      <div
-                        className={`absolute ${language == "ar" ? "-right-10" : "right-0"} mt-2 w-28 rounded-md border bg-bgPrimary shadow-lg`}
-                      >
-                        {languages.map((lang) => (
-                          <button
-                            key={lang.code}
-                            onClick={() => {
-                              setLanguage(lang.code);
-                              setIsOpenL(false);
-                            }}
-                            className={`flex w-full items-center justify-between gap-1 px-4 py-2 text-left hover:bg-bgSecondary ${
-                              language === lang.code ? "bg-bgSecondary" : ""
-                            }`}
-                          >
-                            {lang.label}
-                            <img
-                              src={`/images/${lang.code}.png`}
-                              className="h-5 w-5"
-                              alt="#"
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <Switch theme={theme || "light"} setTheme={setTheme} />
-                  {/* notifications  */}
-                  {/* <div className="relative">
-                    <Link href="/notifies">
-                      <IoMdNotificationsOutline className="size-6 text-textSecondary" />
-                    </Link>
-                  </div> */}
-                  <div className="hs-dropdown relative inline-flex [--placement:bottom-right]">
-                    <DropdownMenu.Root>
-                      <DropdownMenu.Trigger asChild>
-                        <button
-                          onClick={toggleProfile}
-                          className="focus-none focus-none hover:bg-thead relative flex items-center rounded-full p-1 text-sm font-semibold text-gray-800"
-                        >
-                          <img
-                            className="h-8 w-8 rounded-full ring-bgSecondary"
-                            src={"/images/user.png"}
-                            alt="User Avatar"
-                          />
-                        </button>
-                      </DropdownMenu.Trigger>
-
-                      {profile && (
-                        <DropdownMenu.Content
-                          className={`fixed text-textPrimary ${language == "ar" ? "" : "right-[20px]"} top-[20px] min-w-60 rounded-lg bg-bgPrimary p-2 shadow-md`}
-                          aria-labelledby="hs-dropdown-with-header"
-                          align="end"
-                          sideOffset={5}
-                        >
-                          <div className="rounded-t-lg bg-bgPrimary px-5 py-3">
-                            <p className="text-sm text-textPrimary">
-                              {t("signedInAs")}
-                            </p>
-                            <p className="text-sm font-medium text-textPrimary">
-                              {userData?.email}
-                            </p>
-                          </div>
-                          <div className="mt-2 py-2">
-                            <DropdownMenu.Item asChild>
-                              <Link
-                                className="flex items-center gap-x-3.5 rounded-lg border-none px-3 py-2 text-sm text-textPrimary outline-none hover:bg-bgSecondary"
-                                href="/profile"
-                              >
-                                <svg
-                                  className="h-4 w-4 flex-shrink-0"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                  <circle cx="9" cy="7" r="4" />
-                                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                </svg>
-                                {t("profile")}
-                              </Link>
-                            </DropdownMenu.Item>
-                          </div>
-                        </DropdownMenu.Content>
-                      )}
-                    </DropdownMenu.Root>
-                  </div>
-                </div>
-              </div>
-            </nav>
-          </header>
+        <div>
+          {/* mobile top bar */}
           <div className="border-borderPrimary sticky inset-x-0 top-0 z-20 border-y bg-bgPrimary px-4 sm:px-6 md:px-8 lg:hidden">
             <div className="flex items-center justify-between py-2">
               <ol className="ms-3 flex items-center whitespace-nowrap">
@@ -311,8 +294,6 @@ const NavBar = () => {
                 onClick={OpenSideBar}
                 type="button"
                 className="border-borderPrimary flex items-center justify-center gap-x-1.5 rounded-lg border px-3 py-2 text-xs text-gray-500 hover:text-gray-600"
-                data-hs-overlay="#application-sidebar"
-                aria-controls="application-sidebar"
                 aria-label="Sidebar"
               >
                 <svg
@@ -334,12 +315,13 @@ const NavBar = () => {
             </div>
           </div>
 
+          {/* sidebar */}
           <div
             id="application-sidebar"
             className={cn(
               "fixed inset-y-0 z-[60] transform bg-bgPrimary transition-all duration-300 ease-in lg:bottom-0 lg:end-auto lg:block",
               small ? "w-[90px]" : "w-[240px]",
-    language === "ar" ? "right-0" : "left-0",
+              language === "ar" ? "right-0" : "left-0",
               small ? "" : "overflow-y-auto",
               "drop-shadow-2xl lg:drop-shadow-none",
               language === "ar"
@@ -351,26 +333,45 @@ const NavBar = () => {
                   : "max-lg:-translate-x-full",
             )}
           >
-            <div className="px-8 pt-4">
-              <Link href="/">
-                {small ? (
-                  <img
-                    className="mt-5 w-10 scale-[2]"
-                    src="/images/innovix.png"
-                    alt="Logo"
-                  />
-                ) : (
-                  <img className="w-26" src="/images/innovix.png" alt="Logo" />
+            {/* Portal header card */}
+            <Link
+              href={
+                role === "admin"
+                  ? "/admin"
+                  : role === "employer"
+                    ? "/employer"
+                    : "/job-seeker"
+              }
+              className="flex items-center gap-3 border-b bg-white px-6 py-4 transition-colors hover:bg-slate-50"
+            >
+              <div
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-lg",
+                  roleColors.accentBg,
+                  roleColors.accentText,
                 )}
-              </Link>
-            </div>
+              >
+                <LuLayoutDashboard className="h-6 w-6" />
+              </div>
+
+              <span className="text-sm font-medium text-slate-700">
+                {portalTitle}
+              </span>
+            </Link>
+
             <nav
-              className={`hs-accordion-group flex w-full flex-col flex-wrap ${small ? "p-6" : ""}`}
+              className={cn(
+                "hs-accordion-group flex w-full flex-col flex-wrap",
+                small ? "p-6" : "",
+              )}
               data-hs-accordion-always-open
             >
-              <ul className="space-y-1.5">
+              <ul className="space-y-4 px-2">
                 <div
-                  className={`flex ${small ? "w-[40px]" : ""} justify-center`}
+                  className={cn(
+                    "flex justify-center",
+                    small ? "w-[40px]" : "",
+                  )}
                 >
                   {small && (
                     <button onClick={toggleNavbarSmall}>
@@ -391,6 +392,7 @@ const NavBar = () => {
                     </button>
                   )}
                 </div>
+
                 {navLinks.map((link) => (
                   <NavBarLink
                     onClick={() => setIsOpen(false)}
@@ -400,10 +402,46 @@ const NavBar = () => {
                     label={link.label}
                     small={small}
                     url={url}
+                    activeBgClass={roleColors.activeBg}
+                    activeTextClass={roleColors.activeText}
+                    currentRole={role}
                   />
                 ))}
               </ul>
             </nav>
+
+            {/* bottom user section */}
+            <div className="fixed bottom-0 w-full">
+              <div className="w-full border-t bg-white px-4 py-4">
+                {/* User info */}
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                    A
+                  </div>
+
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-slate-900">
+                      {roleUserName}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      useradmin@gmail.com
+                    </span>
+                  </div>
+                </div>
+
+                {/* Logout */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    router.push("/role-selection");
+                  }}
+                  className="mt-4 inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-base text-slate-600 transition-colors hover:bg-slate-100 hover:text-red-500"
+                >
+                  <HiOutlineArrowRightOnRectangle className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </header>

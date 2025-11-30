@@ -7,6 +7,8 @@ import {
   HiOutlineBriefcase,
   HiOutlineUser,
 } from "react-icons/hi2";
+import Button from "~/_components/global/Button";
+import Input from "~/_components/global/Input";
 
 type Role = "admin" | "employer" | "candidate";
 
@@ -54,7 +56,7 @@ export default function Page() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col justify-center items-center bg-gradient-to-br from-slate-50 via-white to-sky-50 px-4 pt-16">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-white to-sky-50 px-4 pt-16">
       <div className="mb-10 flex flex-col items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-blue-600 shadow-sm">
           <HiOutlineBriefcase className="h-12 w-12" />
@@ -100,40 +102,46 @@ export default function Page() {
 
       {/* Login form */}
       {selected && (
-        <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white px-10 py-10 shadow-xl">
+        <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white px-10 py-10 shadow-xl max-md:mb-10">
           <h2 className="mb-8 text-center text-lg text-slate-800">
             Sign in as {roleFormTitleMap[selected]}
           </h2>
 
-          <form onSubmit={handleLogin} className="space-y-8">
-            <div>
-              <label className="mb-2 block text-base text-slate-700">
-                Email
-              </label>
-              <input
-                type="email"
-                className="w-full rounded-lg border border-slate-200 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your email"
-              />
-            </div>
+          <form
+            className="space-y-6"
+            onSubmit={(e) => {
+              e.preventDefault();
+              router.push(roleRedirectMap[selected]); // ← Redirect based on role
+            }}
+          >
+            <Input
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              className="bg-white"
+              theme="solid"
+              border="gray"
+              rounded="lg"
+            />
 
-            <div>
-              <label className="mb-2 block text-base text-slate-700">
-                Password
-              </label>
-              <input
-                type="password"
-                className="w-full rounded-lg border border-slate-200 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your password"
-              />
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              className="bg-white"
+              theme="solid"
+              border="gray"
+              rounded="lg"
+            />
 
-            <button
+            <Button
+              as="button"
               type="submit"
-              className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700"
+              className="w-full"
+              color="primary"
             >
               Sign In
-            </button>
+            </Button>
           </form>
 
           <p className="mt-4 text-center text-xs text-slate-500">

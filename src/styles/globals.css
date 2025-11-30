@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .light {
-  --primary: 60, 158, 255; /* #3c9eff */
+  --primary: 20, 94, 252; /* #145efc */
   --hover-primary: 35, 142, 230; /* #3c9eff */
   --secondary: 62, 90, 240; /* #3e5af0 */
   --bg-primary: 255, 255, 255; /* #ffffff */
@@ -21,7 +21,7 @@
 }
 
 .dark {
-  --primary: 86, 170, 255; /* #56AAFF */
+  --primary: 20, 94, 252; /* #145efc */
   --hover-primary: 35, 142, 230; /* #3c9eff */
   --secondary: 86, 109, 242; /* #566df2 */
   --bg-primary: 13, 13, 13; /* #0D0D0D */
