@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Container from "~/_components/Container";
-import { Text } from "~/_components/Text";
+import Container from "~/_components/global/Container";
+import { Text } from "~/_components/global/Text";
 import { useTranslation } from "~/hooks/useTranslatoins";
 
 function EmployerPage() {
