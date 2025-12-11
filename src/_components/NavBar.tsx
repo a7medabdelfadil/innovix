@@ -20,7 +20,7 @@ import {
   HiOutlineArrowRightOnRectangle,
 } from "react-icons/hi2";
 import { HiOutlineUserGroup } from "react-icons/hi";
-
+// new comment
 // ---------- ROLE HELPERS ----------
 
 type PortalRole = "admin" | "employer" | "jobSeeker";
